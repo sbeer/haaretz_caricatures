@@ -15,6 +15,8 @@ from oauth2client.client import SignedJwtAssertionCredentials
 import csv
 import numpy as np
 
+import sys
+sys.stdout.flush()
 
 folder = r'/home/ec2-user/work/haaretz_caricatures'
 links_filename = 'link_list.json'
