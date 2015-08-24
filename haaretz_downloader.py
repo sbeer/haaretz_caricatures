@@ -16,7 +16,7 @@ import csv
 
 
 
-folder = r'./'
+folder = r'/home/ec2-user/work/haaretz_caricatures'
 links_filename = 'link_list.json'
 url_name = "http://www.haaretz.co.il/opinions/caricatures"
 socket_default_timeout = 30
