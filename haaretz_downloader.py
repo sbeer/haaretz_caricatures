@@ -82,11 +82,12 @@ def update_cloud_speadsheet(scope_url, spreadsheet_name, toc_df, upload_full_spe
             if(i==0): continue #skip column names
             ws.insert_row(tuple(record),i+2)
         print "finished updating spreadsheet with {0} new entries".format(i)
+		f.close()
     else:
         for record in list(toc_df.to_records(index=False)):
             ws.append_row(record)
         print "finished updating spreadsheet with {0} new entries".format(len(toc_df))
-    f.close()
+
 
 
 def download_caricatures_form_links(links):
