@@ -13,7 +13,7 @@ import json
 import gspread
 from oauth2client.client import SignedJwtAssertionCredentials
 import csv
-
+import numpy as np
 
 
 folder = r'/home/ec2-user/work/haaretz_caricatures'
@@ -32,7 +32,7 @@ spreadsheet_name = "haaretz_caricatures"
 upload_full_speadsheet = False
 
 def main():
-    print "This will launch the haaretz caricature downloader"
+    print "This will launch the haaretz caricature downloader\n"
     # import ipdb; ipdb.set_trace()
     stored_page_links = load_stored_page_links(links_filename)
     socket.setdefaulttimeout(socket_default_timeout)
@@ -42,51 +42,60 @@ def main():
 
     page_links_lst = list(enumerate(list(new_links)))
     if(len(new_links)>0):
-        print "updating spreadsheet"
+        print "updating spreadsheet\n"
         table_of_content = download_caricatures_form_links(page_links_lst[download_start_offset:])
         toc_df = pd.DataFrame(table_of_content)
         toc_df = toc_df[columns]
 
         if(os.path.exists(os.path.join(folder,excel_filename))):
-            print 'Loading previous stored excel'
+            print 'Loading previous stored excel\n'
             with open(os.path.join(folder,excel_filename), 'a') as f:
                 toc_df.to_csv(f, header=False, index=False)
             f.close()
         else:
             toc_df.to_csv(os.path.join(folder,excel_filename), index=False)
-
-        update_cloud_speadsheet(scope_url, spreadsheet_name, toc_df, upload_full_speadsheet )
-
     else:
-        print "No caricature to update in spreadsheet"
-
-    print "exiting haaretz caricature app"
+        print "No caricature to update in spreadsheet\n"
 
 
+    print "Updating to remote spreadsheet\n"
+    local_spreadsheet = pd.read_csv(os.path.join(folder,excel_filename)).replace(np.nan,' ', regex=True)
+    local_media_records = list(local_spreadsheet.Media)
+    print "total local media records\n"
+
+    remote_ws = get_remote_worksheet(scope_url, spreadsheet_name)
+    remote_records = remote_ws.get_all_records(head=1)
+    remote_media_records = [r.get('Media') for r in remote_records if r.get('Media') is not '']
+
+    to_update_records = [lr for lr in list(local_spreadsheet.to_records(index=False)) if lr[4] not in remote_media_records]
+    update_records_to_remote_worksheet(get_remote_worksheet(scope_url, spreadsheet_name), to_update_records, upload_full_speadsheet)
 
 
-def update_cloud_speadsheet(scope_url, spreadsheet_name, toc_df, upload_full_speadsheet):
+    print "exiting haaretz caricature app\n"
 
 
+def get_remote_worksheet(scope_url, spreadsheet_name):
     json_key = json.load(open(os.path.join(folder,credential_filename)))
     scope = [scope_url]
     credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'], scope)
     gc = gspread.authorize(credentials)
     wks = gc.open(spreadsheet_name)
-    ws = wks.sheet1
+    return wks.sheet1
 
+
+def update_records_to_remote_worksheet(rws, to_update_records, upload_full_speadsheet):
     if upload_full_speadsheet:
         f = open(os.path.join(folder,excel_filename), 'rb')
         excel_spreadsheet = csv.reader(f)
         for i,record in enumerate(excel_spreadsheet):
             if(i==0): continue #skip column names
-            ws.insert_row(tuple(record),i+2)
+            rws.insert_row(tuple(record),i+2)
         print "finished updating spreadsheet with {0} new entries".format(i)
-		f.close()
+        f.close()
     else:
-        for record in list(toc_df.to_records(index=False)):
-            ws.append_row(record)
-        print "finished updating spreadsheet with {0} new entries".format(len(toc_df))
+        for record in to_update_records:
+            rws.append_row(record)
+        print "finished updating spreadsheet with {0} new entries".format(len(to_update_records))
 
 
 
