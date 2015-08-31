@@ -150,14 +150,14 @@ def download_caricatures_form_links(links):
             ff, fname = os.path.split(dest_file)
 
             table_of_content.append({'End Date': '/'.join(pd.split('.')),
-             'Headline': 'please add headline',
+             'Headline': '<h1 style="color:black;text-align:right;font-size:35px">please add headline</h1>',
              'Media': pl,
              'Media Caption': '',
              'Media Credit': 'caricatures from Haaretz newspaper',
              'Media Thumbnail': '',
              'Start Date': '/'.join(pd.split('.')),
              'Tag': '',
-             'Text': 'add text',
+             'Text': '<p style="text-align:right;font-size:20px">add text</p>',
              'Type': ''})
     return table_of_content
 
