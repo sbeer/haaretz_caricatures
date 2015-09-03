@@ -72,8 +72,11 @@ def main():
     to_update_records = [lr for lr in list(local_spreadsheet.to_records(index=False)) if lr[4] not in remote_media_records]
     update_records_to_remote_worksheet(get_remote_worksheet(scope_url, spreadsheet_name), to_update_records, upload_full_speadsheet)
 
+    print 20*""
     print "update post in: https://docs.google.com/spreadsheets/d/1yY31Yt5V-VMCJWQXa1k5tCLwlo2oWa-KXj0NkwjyHG4/edit#gid=0"
+    print "website url: http://tx.technion.ac.il/~sbeer/haaretz_caricatures/"
     print "exiting haaretz caricature app\n"
+    print 20*""
 
 
 def get_remote_worksheet(scope_url, spreadsheet_name):
